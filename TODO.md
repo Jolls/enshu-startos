@@ -8,11 +8,6 @@ comes up listening on `:3000` (confirmed via `start-cli package logs` and a live
 - [ ] **Icon.** Upstream ships no icon/logo of any kind (checked the repo tree at v0.1.25).
       `icon.svg` is still the scaffold placeholder. Do not fabricate one — either get a real
       icon from the Enshu maintainer or design one, then replace `icon.svg` (≤ 40 KiB).
-- [ ] **`packageRepo`.** `startos/manifest/index.ts` currently points at
-      `https://github.com/Jolls/enshu-startos`, following this author's naming convention for
-      other packages (`navidrome-startos`, `arx-startos`) — but that repo does not exist yet
-      (confirmed via `gh api repos/Jolls/enshu-startos` → 404). Create it and push this package
-      there, or update the field if it lands somewhere else.
 - [ ] **Translations.** `startos/manifest/i18n.ts` and
       `startos/i18n/dictionaries/translations.ts` (es_ES/de_DE/pl_PL/fr_FR) are machine-drafted.
       Have a native speaker review before publishing.
