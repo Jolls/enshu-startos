@@ -63,25 +63,27 @@ One volume, `main`, with three subpaths:
   blob store (`MEDIA_ROOT`), holding imported note/card media (images, audio) referenced by
   the database.
 - `main/store.json` — this package's own file, not upstream's. Holds the generated
-  PostgreSQL password and the selected primary-URL domain.
+  PostgreSQL password.
 
 There is no embedded database — the data of record lives in PostgreSQL, in the volume above.
 
 ## File Models
 
-- **`store.json`** (`startos/fileModels/store.json.ts`) — JSON, holds two keys:
+- **`store.json`** (`startos/fileModels/store.json.ts`) — JSON, holds one key:
   - `pgPassword` — generated once on install (`startos/init/seedFiles.ts`), never re-asserted
     afterward. There is no action to rotate it; recovering from a suspected leak means
     restoring the volume or reinstalling.
-  - `domain` — the address Enshu treats as its own origin (used for the `ORIGIN` env var).
-    Seeded on install with a `.local` address if one is available, otherwise re-asserted only
-    when it changes via the **Set Primary URL** action (see Actions below). A hand-edit
-    would be overwritten the next time the action runs, but nothing rewrites it on a plain
-    restart.
 
 Enshu itself owns no configuration file on disk — its only inputs are the four environment
 variables set in `startos/main.ts` (`DATABASE_URL`, `MEDIA_ROOT`, `ADDR`, `ORIGIN`), all
-re-asserted on every daemon start.
+re-asserted on every daemon start. `ORIGIN` is read fresh from the service's own interfaces
+each start (`utils.ts`'s `getNonLocalUrls`, via `sdk.host.getOwn`) rather than stored — every
+non-local address the service is currently reachable at (LAN IP, `.local`, a configured
+domain, Tor, ...), comma-separated. Upstream v0.1.26 added support for a comma-separated
+`ORIGIN` (Jolls/enshu#111/#112) specifically so a CSRF check doesn't have to pick one address;
+before that fix this package made the user choose a single primary URL via a
+now-removed `Set Primary URL` action, since every other address would 403 on state-changing
+requests.
 
 ## Dependencies
 
@@ -97,9 +99,8 @@ adds. PostgreSQL is not exposed on any interface; `enshu-sub` reaches it at
 
 ## Installation and First-Run Flow
 
-On install, `startos/init/seedFiles.ts` generates the PostgreSQL password and
-`startos/init/taskSetPrimaryUrl.ts` picks a default primary URL (preferring a `.local`
-address). `startos/main.ts` then starts `postgres`, waits for `pg_isready`, runs the
+On install, `startos/init/seedFiles.ts` generates the PostgreSQL password.
+`startos/main.ts` then starts `postgres`, waits for `pg_isready`, runs the
 `migrate` oneshot (`goose ... up` against `/migrations` — idempotent, safe on every start),
 and only then starts the `enshu` daemon. There is no separate setup wizard: the first
 usable state is Enshu's own signup screen. Enshu has no built-in admin/superuser concept —
@@ -107,22 +108,11 @@ every account is created the same way, through that screen.
 
 ## Actions
 
-- **Set Primary URL** (`startos/actions/setPrimaryUrl.ts`) — user-facing. Choose which of
-  this service's addresses Enshu treats as its own origin, used for the `ORIGIN` env var
-  Enshu's CSRF check compares each state-changing request's `Origin` header against.
-  Instant — updates `store.json` and the running daemon restarts with the new value. Safe
-  to run repeatedly; picking the address you actually browse to avoids every non-GET
-  request failing with a CSRF rejection.
+None.
 
 ## Tasks
 
-- **Primary URL unavailable** (raised by `startos/init/taskSetPrimaryUrl.ts`) — fires when
-  the address currently selected as primary (e.g. a domain, or a gateway's public IP) is no
-  longer among the service's available addresses (a gateway was disabled, a domain removed).
-  Severity `critical`: it blocks the service from starting, since Enshu would otherwise start
-  with an `ORIGIN` that can never match an incoming request. Clears by running **Set Primary
-  URL** and picking any currently-available address. Can recur if that address is later
-  removed too.
+None.
 
 ## Health Checks
 
@@ -139,9 +129,11 @@ every account is created the same way, through that screen.
 Strategy: whole-volume copy (`sdk.Backups.ofVolumes('main')`), not a database dump. The
 PostgreSQL data directory, the media blob store, and `store.json` are all backed up and
 restored byte-for-byte together, so a restore comes back with the exact same generated
-password and primary-URL selection it had at backup time — nothing to re-enter. Because the
-volume is copied rather than dumped, a restored instance needs no re-sync or replay step
-before it's usable; `postgres` simply starts against its already-populated data directory.
+password it had at backup time — nothing to re-enter. Because the volume is copied rather
+than dumped, a restored instance needs no re-sync or replay step before it's usable;
+`postgres` simply starts against its already-populated data directory. `ORIGIN` is
+recomputed fresh from the restored instance's own addresses on first start, not restored
+from the backup.
 
 ## Limitations and Differences
 
@@ -174,10 +166,8 @@ startos_managed_env_vars:
 dependencies: none
 interfaces:
   ui: { type: ui, port: 3000 }
-actions:
-  - set-primary-url
-tasks:
-  - { action: set-primary-url, severity: critical }
+actions: none
+tasks: none
 health_checks:
   - postgres
   - enshu

@@ -1,17 +1,19 @@
 import { i18n } from './i18n'
 import { sdk } from './sdk'
 import { storeJson } from './fileModels/store.json'
-import { pgDatabase, pgPort, pgUser, uiPort } from './utils'
+import { getNonLocalUrls, pgDatabase, pgPort, pgUser, uiPort } from './utils'
 
 export const main = sdk.setupMain(async ({ effects }) => {
   console.info(i18n('Starting Enshu!'))
 
   // Generated once on install by init/seedFiles.ts.
   const pgPassword = (await storeJson.read(s => s.pgPassword).const(effects)) ?? ''
-  // Selected by the user via the "Set Primary URL" action (init/taskSetPrimaryUrl.ts
-  // seeds a default on install). Reactive so ORIGIN — and therefore the daemon —
-  // updates if the choice changes later.
-  const domain = await storeJson.read(s => s.domain).const(effects)
+  // Every non-local address the service is currently reachable at (LAN, mDNS,
+  // Tor, ...), reactive so ORIGIN — and therefore the daemon — updates if the
+  // set of addresses changes later. Upstream v0.1.26 made ORIGIN accept a
+  // comma-separated list (Jolls/enshu#111/#112), so there's no need to make
+  // the user pick a single primary address anymore.
+  const origins = (await getNonLocalUrls(effects)).join(',')
 
   const databaseUrl = `postgres://${pgUser}:${pgPassword}@127.0.0.1:${pgPort}/${pgDatabase}`
 
@@ -91,7 +93,7 @@ export const main = sdk.setupMain(async ({ effects }) => {
           DATABASE_URL: databaseUrl,
           MEDIA_ROOT: '/data/media',
           ADDR: `:${uiPort}`,
-          ORIGIN: domain || '',
+          ORIGIN: origins,
         },
       },
       ready: {

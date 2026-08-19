@@ -21,10 +21,8 @@ no separate database service to install or configure.
 3. Import an existing Anki collection (`.apkg`/`.colpkg`) if you have one, or create a deck
    from scratch, and start reviewing.
 
-If you plan to reach this service from more than one address (LAN and a domain, for
-example), open **Set Primary URL** under Actions and pick the address you'll actually browse
-to — Enshu rejects sign-in and other form submissions that arrive at a different address
-than the one selected there.
+Reaching this service from more than one address (LAN and a domain, or LAN and Tor, for
+example) works out of the box — no extra setup needed.
 
 ## Using Enshu
 
@@ -32,9 +30,3 @@ than the one selected there.
 
 The same interface serves both the reviewer (studying cards) and account/deck management.
 New visitors land on a sign-in/sign-up screen.
-
-### Actions
-
-- **Set Primary URL** — pick which of this service's addresses Enshu treats as its own.
-  Run this once after install if you use more than one address to reach the service, and
-  again any time you add or remove an address you use to reach it.

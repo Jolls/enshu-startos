@@ -10,13 +10,6 @@ const dict = {
   'PostgreSQL is ready': 5,
   // interfaces.ts
   'The Enshu web reviewer and admin UI': 6,
-  // actions/setPrimaryUrl.ts
-  'Set Primary URL': 7,
-  'Choose which of your Enshu addresses is used for the CSRF origin check (see the ORIGIN env var in .env.example).': 8,
-  "Enshu compares each state-changing request's Origin header against this address. Requests arriving at a different address than the one selected here will be rejected with a 403.": 9,
-  URL: 10,
-  // init/taskSetPrimaryUrl.ts
-  'Primary URL is no longer available. Select a new one.': 11,
 } as const
 
 /**
