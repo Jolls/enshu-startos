@@ -18,5 +18,5 @@ comes up listening on `:3000` (confirmed via `start-cli package logs` and a live
       `cmd/enshu/main.go`). If that matters to you, flag it prominently before publishing —
       currently just noted under README § Limitations and Differences.
 - [ ] Re-verify `docker-tag`/submodule pins closer to publish time (Postgres image, upstream
-      Enshu release) per `UPDATING.md` — this package was built against `postgres:18.6` and
-      `enshu v0.1.25`, both current as of packaging.
+      Enshu release) per `UPDATING.md` — this package was bumped to `enshu v0.1.27`; re-check
+      `postgres` at publish time too.

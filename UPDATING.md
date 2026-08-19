@@ -1,7 +1,7 @@
 # Updating the upstream version
 
 Upstream is tracked via the `upstream-project/` git submodule, pinned to a tagged release
-(currently `v0.1.25`). This package's root `Dockerfile` builds from that submodule's source
+(currently `v0.1.27`). This package's root `Dockerfile` builds from that submodule's source
 (see `README.md` § Image and Container Runtime for why it's a custom Dockerfile rather than
 `upstream-project/Dockerfile` directly) — there is no separate `postgres` version to track,
 that image is pinned independently by Docker Hub tag in `startos/manifest/index.ts`.
